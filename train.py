@@ -1,0 +1,30 @@
+import torch
+import torch.nn as nn
+import os
+from utils import train_generator
+from loss import Loss
+from model import Model
+
+device = 'cuda'
+epochs = 100
+total_images   = len(os.listdir('/home/kshitij/Desktop/facerecognition/VOC2012_train_val/JPEGImages'))
+batch_size = 8
+steps_per_epoch = total_images // batch_size
+data = train_generator(batch_size)
+loss_function = Loss()
+
+model = Model().to(device)
+optimizer = torch.optim.Adam(params=model.parameters() , lr=1e-5)
+for i in range(epochs):
+    print(f"The epoch number {i+1}")
+    for j in range(steps_per_epoch):
+        x_bacth  , y_batch = next(data)
+        #print(x_bacth.shape)
+        model.train()
+        y_pred = model(x_bacth)
+        optimizer.zero_grad()
+        loss = loss_function(y_batch , y_pred)
+        loss.backward()
+        optimizer.step()
+        print(f"The loss for epoch {i} and step {j} is {loss}")
+    torch.save(model.state_dict(), f"yolo_pytorch_epoch{i+1}")
