@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from torchsummary import summary
+#from torchsummary import summary
 
 class Backbone(nn.Module):
     def __init__(self):
@@ -15,4 +15,4 @@ class Backbone(nn.Module):
 
 if __name__ == "__main__":
     backbone = Backbone().to('cuda')
-    print(summary(backbone   ,  (3, 448,448),  device='cuda'))
+    #print(summary(backbone   ,  (3, 448,448),  device='cuda'))

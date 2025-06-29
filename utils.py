@@ -9,18 +9,21 @@ import xml.etree.ElementTree as ET
 
 # Define the transformation
 transform = transforms.Compose([
-    transforms.Resize((448, 448)),  # Resize to target size (height, width)
+    transforms.Resize((416, 416)),  # Resize to target size (height, width)
     transforms.ToTensor()           # Convert to tensor and normalize to [0,1]
 ])
 
 # Load image using PIL
 
 # Apply the transform
-def preprocess(path):
-    image_tensor = Image.open(path).convert('RGB')
-    image_tensor = transform(image_tensor)
-
-    return image_tensor/255.
+def preprocess(path , path_pass = True):
+    if path_pass:
+        image_tensor = Image.open(path).convert('RGB')
+        image_tensor = transform(image_tensor)
+    else:
+        image_tensor = Image.fromarray(path)
+        image_tensor = transform(image_tensor)
+    return image_tensor
 def get_label(path):
     tree = ET.parse(path)
     root = tree.getroot()

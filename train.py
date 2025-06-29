@@ -14,9 +14,10 @@ data = train_generator(batch_size)
 loss_function = Loss()
 
 model = Model().to(device)
-optimizer = torch.optim.Adam(params=model.parameters() , lr=1e-5)
+optimizer = torch.optim.Adam(params=model.parameters() , lr=0.001 ) #, momentum=0.9,weight_decay=0.0005)
 for i in range(epochs):
     print(f"The epoch number {i+1}")
+    avg_loss = 0
     for j in range(steps_per_epoch):
         x_bacth  , y_batch = next(data)
         #print(x_bacth.shape)
@@ -26,5 +27,6 @@ for i in range(epochs):
         loss = loss_function(y_batch , y_pred)
         loss.backward()
         optimizer.step()
-        print(f"The loss for epoch {i} and step {j} is {loss}")
+        avg_loss += loss
+        print(f"The loss for epoch {i} and step {j} is {avg_loss/(j+1)}")
     torch.save(model.state_dict(), f"yolo_pytorch_epoch{i+1}")

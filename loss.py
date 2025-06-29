@@ -27,21 +27,26 @@ class Loss(nn.Module):
         return (inter_area / union )
         
     def forward(self , y_true , y_pred):
-        obj_mask  =(torch.sum(y_true[...,  :]  ==  1. , dim=3) == 1)
-        noobj_mask = (torch.sum(y_true[...,  :] != 1. , dim=3) !=  1)
-        
+        obj_mask  =(y_true[...,4]   ==  1)
+        noobj_mask =(y_true[...,4] !=  1)
         iou1 = self.custom_iou(y_true[obj_mask][... , :4] , y_pred[obj_mask][... , :4] )
-        iou2 = self.custom_iou(y_true[obj_mask][... , :4] , y_pred[obj_mask][... , 6:10] )
-        mask = torch.unsqueeze(iou1 > iou2 , dim=1)
-        predictor_box = torch.where(mask , y_pred[obj_mask][..., :5] , y_pred[obj_mask][..., 6:11]  )
-        nopredictor_box = torch.where(mask ,   y_pred[obj_mask][..., 6:11] , y_pred[obj_mask][..., :5]  )
-        classfication = torch.sum(torch.square(y_true[obj_mask][10:]  - y_pred[obj_mask][10:]))
-        conf = torch.sum(torch.square(predictor_box[... , 4] - 1)) + torch.sum(torch.square(nopredictor_box[... , 4] - 0))
-        conf  += 0.5 * torch.sum(torch.square(y_pred[noobj_mask][..., 4] - 0 )) + 0.5 * torch.sum(torch.square(y_pred[noobj_mask][..., 4] - 0 ))
-        try:
-            localization = torch.sum(torch.square(predictor_box[... , 0:2] - y_true[... , 0:2])) +  torch.sum(torch.square(predictor_box[... , 2:4] - y_true[... , 2:4]))
-        except:
-            localization  = 0
+        iou2 = self.custom_iou(y_true[obj_mask][... , :4] , y_pred[obj_mask][... , 5:9] )
+        mask = (iou1 > iou2).unsqueeze(1).float()
         
-        return 5*localization + conf + classfication
+        predictor_box =mask *  y_pred[obj_mask][..., :5]  +  (1-mask) * y_pred[obj_mask][..., 5:10]  
+        classfication = torch.sum(torch.square(y_true[obj_mask][... , 10:]  - y_pred[obj_mask][... , 10:]))
+        conf = torch.sum(torch.square(predictor_box[... , 4] - 1)) 
+        conf  += 0.5 * torch.sum(torch.square(y_pred[noobj_mask][..., 4] - 0 )) +0.5 * torch.sum(torch.square(y_pred[noobj_mask][..., 9] - 0 ))
+        if predictor_box.shape[0] == 0:
+            loc_loss = torch.tensor(0.0, device=y_true.device)
+        else:
+            xy_loss = torch.sum((predictor_box[..., 0:2] - y_true[obj_mask][..., 0:2]) ** 2)
+            wh_loss = torch.sum((torch.sqrt(predictor_box[..., 2:4].clamp(min=1e-6)) -
+                                torch.sqrt(y_true[obj_mask][..., 2:4].clamp(min=1e-6))) ** 2)
+            loc_loss = xy_loss + wh_loss
+
+        return 5*loc_loss + conf + classfication
         
+if __name__ == "__main__":
+    loss = Loss()
+    loss(torch.ones((32, 7,7,30) , device='cuda') , torch.ones((32, 7,7,30) , device='cuda'))
