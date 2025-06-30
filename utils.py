@@ -9,13 +9,11 @@ import xml.etree.ElementTree as ET
 
 # Define the transformation
 transform = transforms.Compose([
-    transforms.Resize((416, 416)),  # Resize to target size (height, width)
-    transforms.ToTensor()           # Convert to tensor and normalize to [0,1]
+    transforms.Resize((448, 448)),  
+    transforms.ToTensor()           
 ])
 
-# Load image using PIL
 
-# Apply the transform
 def preprocess(path , path_pass = True):
     if path_pass:
         image_tensor = Image.open(path).convert('RGB')

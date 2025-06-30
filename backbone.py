@@ -6,7 +6,7 @@ import torchvision.models as models
 class Backbone(nn.Module):
     def __init__(self):
         super().__init__()
-        self.backbone = models.resnet50(pretrained=True)
+        self.backbone = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         self.backbone.fc = torch.nn.Identity()
 
     def forward(self , x):
