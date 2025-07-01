@@ -10,12 +10,12 @@ class Model(nn.Module):
         super().__init__()
        
         self.backbone = Backbone().to('cuda')
-        self.dense = nn.Sequential(nn.Linear(2048,  4096)  , nn.LeakyReLU(0.1) , nn.Dropout(0.5) ,nn.Linear(4096 , 4096 ) ,nn.LeakyReLU(0.1) ,   nn.Linear(4096,  7*7*30)  , nn.LeakyReLU(0.1)).to('cuda')
+        self.dense = nn.Sequential(nn.Linear(7*7*1024,  2048)  , nn.LeakyReLU(0.1) , nn.Dropout(0.5) ,   nn.Linear(2048,  7*7*30)  ).to('cuda')
     def forward(self , x ):
         x = self.backbone(x )
         
         x = self.dense(x)
-        x = torch.reshape(x , (-1 , 7, 7, 30))
+        x = x.view((-1 , 7,7,30))
         return torch.sigmoid(x )
 
 if __name__ == "__main__":

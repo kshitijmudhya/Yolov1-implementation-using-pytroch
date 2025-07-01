@@ -34,6 +34,7 @@ class Loss(nn.Module):
         mask = (iou1 > iou2).unsqueeze(1).float()
         
         predictor_box =mask *  y_pred[obj_mask][..., :5]  +  (1-mask) * y_pred[obj_mask][..., 5:10]  
+        
         classfication = torch.sum(torch.square(y_true[obj_mask][... , 10:]  - y_pred[obj_mask][... , 10:]))
         conf = torch.sum(torch.square(predictor_box[... , 4] - 1)) 
         conf  += 0.5 * torch.sum(torch.square(y_pred[noobj_mask][..., 4] - 0 )) +0.5 * torch.sum(torch.square(y_pred[noobj_mask][..., 9] - 0 ))
