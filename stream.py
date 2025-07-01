@@ -16,7 +16,7 @@ def draw(x1 ,y1 , x2, y2 , path):
     return image
 device = 'cuda'
 model =  Model().to(device)
-model.load_state_dict(torch.load("yolo_pytorch_epoch7.pt" , weights_only=True))
+model.load_state_dict(torch.load("final.pt" , weights_only=True))
 
 maximum = 0 
 grid_row = 0
@@ -73,13 +73,10 @@ def draw_box(prediction , path):
     
     print(VOC_CLASSES[torch.argmax(onehot).to('cpu').numpy()])
     return image
-'''image = preprocess("test1.jpg").to(device)
-prediction = model(image.reshape(-1 , 3,448,448))
-image = draw_box(prediction , cv2.imread("test1.jpg"))
-cv2.imwrite("prediction.jpg" , image)
-'''
-cap = cv2.VideoCapture(0)       
 
+
+cap = cv2.VideoCapture(0)       
+ 
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -88,13 +85,12 @@ while True:
     if not ret:
         print("Can't receive frame. Exiting...")
         break
+
     frame = preprocess(frame  , False  ).to(device)
-    
+        
     prediction = model(frame.reshape((-1, 3, 448,448)))
     image = draw_box(  prediction , original_frame)
-           
-
-
+            
     #print(p
     # Load an image
     
